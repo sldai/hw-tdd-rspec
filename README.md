@@ -1,7 +1,6 @@
 # TDD with RSpec
 
 [![Build Status](https://app.travis-ci.com/sldai/hw-tdd-rspec.svg?branch=master)](https://app.travis-ci.com/sldai/hw-tdd-rspec)
-
 [![Test Coverage](https://api.codeclimate.com/v1/badges/b735fecf2f26303ed031/test_coverage)](https://codeclimate.com/github/sldai/hw-tdd-rspec/test_coverage)
 
 In this assignment you will use a combination of Acceptance and
