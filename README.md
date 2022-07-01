@@ -2,6 +2,7 @@
 
 [![Build Status](https://app.travis-ci.com/sldai/hw-tdd-rspec.svg?branch=master)](https://app.travis-ci.com/sldai/hw-tdd-rspec)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/b735fecf2f26303ed031/test_coverage)](https://codeclimate.com/github/sldai/hw-tdd-rspec/test_coverage)
+[![Coverage Status](https://coveralls.io/repos/github/sldai/hw-tdd-rspec/badge.svg?branch=master)](https://coveralls.io/github/sldai/hw-tdd-rspec?branch=master)
 
 In this assignment you will use a combination of Acceptance and
 Unit/Functional 
