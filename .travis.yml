@@ -14,7 +14,6 @@ before_install:
 script:
   - bundle exec rake db:setup
   - bundle exec rake spec
-  - $CCTR format-coverage --output coverage/codeclimate.$SUITE.json
   - bundle exec rake cucumber
   - $CCTR format-coverage --output coverage/codeclimate.$SUITE.json
 after_script:
