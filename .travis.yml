@@ -13,9 +13,9 @@ before_install:
   - $CCTR before-build
 script:
   - bundle exec rake db:setup
-  - rspec
+  - bundle exec rake spec
   - $CCTR format-coverage --output coverage/codeclimate.$SUITE.json
-  - cucumber
+  - bundle exec rake cucumber
   - $CCTR format-coverage --output coverage/codeclimate.$SUITE.json
 after_script:
   - $CCTR sum-coverage coverage/codeclimate.*.json | $CCTR upload-coverage
