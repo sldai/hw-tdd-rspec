@@ -1,419 +1,224 @@
-BDD and Cucumber
-================
+# TDD with RSpec
 
-**NOTE: Do not clone this repo to your workspace. Fork it first, then clone your fork.**
+![example workflow](https://github.com/sldai/hw-tdd-rspec/actions/workflows/main.yml/badge.svg)
+[![Build Status](https://app.travis-ci.com/sldai/hw-tdd-rspec.svg?branch=master)](https://app.travis-ci.com/sldai/hw-tdd-rspec)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/b735fecf2f26303ed031/test_coverage)](https://codeclimate.com/github/sldai/hw-tdd-rspec/test_coverage)
+[![Coverage Status](https://coveralls.io/repos/github/sldai/hw-tdd-rspec/badge.svg?branch=master)](https://coveralls.io/github/sldai/hw-tdd-rspec?branch=master)
+[![GitHub Super-Linter](https://github.com/sldai/hw-tdd-rspec/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
+In this assignment you will use a combination of Acceptance and
+Unit/Functional 
+tests with the Cucumber and RSpec tools to add a "find movies with same
+director" feature to RottenPotatoes.
+
+**NOTE: Do not clone this repo to your workspace. Fork it first, then
+**clone your fork.**
+
+Learning Goals
+--------------
+After you complete this assignment, you should be able to:
+
+* Create and run simple Cucumber scenarios to test a new feature
+
+* Use RSpec to create unit and functional tests that drive the creation
+of app code that lets the Cucumber scenario pass 
+
+* Understand where to modify a Rails app to implement the various parts
+of a new feature, since a new feature often touches the database schema,
+model(s), view(s), and controller(s)
+
+* Use continuous integration with [Travis](http://travis-ci.org) to
+continuously monitor test coverage and passing status
+
+Specifically, you will add two features to RottenPotatoes: "User can
+include name of Director with a movie", and "Given a movie with a
+director, user can search for other movies with same director".
+You will use TDD to develop these features and achieve 100% statement coverage (C0)
+of RSpec tests for the features.
 
 
-In this assignment you will create user stories to describe a feature of a 
-SaaS app, use the Cucumber tool to turn those stories into executable 
-acceptance tests, and run the tests against your SaaS app.  
+Introduction and Setup
+----
 
+## Travis CI: continuous integration and test coverage
 
-# Learning Goals
+In this assignment you'll use [Travis](http://travis-ci.org) to
+continuously monitor if your tests are passing and what your C0 test coverage is.  If you don't already
+have a free Travis account, create one; then add your fork of this
+repo to the "watched repos".  You will have to confirm on GitHub that
+Travis should be allowed access to your public repo; this allows Travis
+to be notified when any code pushes occur.
 
-After completing this assignment, you will know how to:
+The idea behind CI is simple: it can be set up to automatically run
+tasks related to testing and verification each time you push new code.
+For Rails apps that have been set up with Cucumber and RSpec, the tasks
+`rake cucumber` and `rake rspec` run all of the Cucumber scenarios and
+RSpec tests, respectively.  We will also include an additional task 
+that measures test coverage, by tracking which lines of which files in your
+app are actually "touched" by any test code.
 
-* Write a Cucumber acceptance test, based on a user story, reflecting
-the basic test structure of
-test setup (Given) followed by stimulus (When) and finally postcondition checking (Then).
-* Run the test and identify passing and failing steps.
-* Create more complex (declarative) scenario steps by re-using
-existing simple (imperative) scenario steps, both to keep your test
-code DRY and to allow your Cucumber scenarios to express behavior at a
-higher level of abstraction.
+1. On the Travis CI website, locate the instructions to add a "Travis CI
+badge" to this `README.md` file.  Commit and push the modified
+`README.md` and verify you can see the Travis badge render correctly on
+the front page of your repo.
 
-# Overview
+2. Take a look at the `.travis.yml` file in this project, which gives
+Travis instructions on what to do each time code is pushed to GitHub.
+Satisfy yourself that you understand the meaning of each directive in
+that file.
 
-Specifically, you will write Cucumber scenarios that test the happy
-paths of parts 1-3 of the Rails Intro assignment, in which you added
-filtering and sorting to RottenPotatoes' `index` view for Movies.
+1. In particular, notice the lines that collect test coverage information and send it to CodeClimate, a hosted
+code-analysis service, to report on your test coverage.  To set this up:
+Setup a free account (we recommend using "Sign In With GitHub") on `codeclimate.com`, and add the repo for this
+homework.  Go to the repo's settings in CodeClimate, select the Test Coverage set of options, and
+copy the CodeClimate Test Reporter ID (a long hexadecimal string).  **Copy this string to the `.travis.yml` file** as the value 
+for the global option `CC_TEST_REPORTER_ID`.  **If you don't do this step, Travis will be unable to report 
+test coverage results to CodeClimate.**
 
-The app code in `rottenpotatoes` contains a "canonical"
-(known-correct) solution to the
-Rails Intro assignment against which to write your scenarios, and the
-necessary scaffolding for the first couple of scenarios. 
+**Part 0: Setup - ensure tests run locally**
 
-Fork this repo to your GitHub account, then clone the fork to your
-development environment.
+Clone this repo to your development environment,  make sure you have the necessary gems installed,
+and do the necessary configuration to install Cucumber and RSpec:
 
-We recommend
-that you do a `git commit` as you get each part working.  As an optional
-additional help, Git allows you to associate tags---symbolic
-names---with particular commits.  For example, immediately after doing a
-commit, you could say `git tag hw4-part1b` , and thereafter you could
-use `git diff hw4-part1b` to see differences since that commit, rather
-than remembering its commit ID.  Note that after creating a tag in your
-local repo, you need to say `git push YOUR_REMOTE --tags` to push the tags to
-your remote.
-
-# Part 0: Set up
-
-Like other useful tools we've seen, Cucumber is supplied as a Ruby gem,
-so the first thing we need to do is declare that our app depends on this
-gem and use Bundler to install it.
-
-We actually need some additional gems besides Cucumber itself:
-* `cucumber-rails` provides support for Cucumber to work with Rails
-apps.
-* `cucumber-rails-training-wheels` provides a set of very basic
-low-level Cucumber step definitions having to do with inspecting your
-SaaS app's Web pages and filling in forms.  We will get away from
-using these later, but they are a useful "starter pack" for writing
-your first Cucumber scenarios.
-* `capybara` does the actual work of manipulating Web pages and
-"pretending to be a user".
-* `database_cleaner` clears the test database between runs: every
-scenario starts with an empty database, so scenarios don't depend on each other
-* `launchy` is a useful debugging tool that shows you exactly the web
-page Cucumber "sees", in case you're having trouble debugging your
-test steps
-
-Ensure the `group :test` section of Gemfile contains (at least) those
-gems:
-
-```ruby
-group :test do
-  gem 'cucumber-rails', :require => false
-  gem 'cucumber-rails-training-wheels' # some pre-fabbed step definitions  
-  gem 'database_cleaner' # to clear Cucumber's test database between runs
-  gem 'capybara'         # lets Cucumber pretend to be a web browser
-  gem 'launchy'          # a useful debugging aid for user stories
-end
+```
+bundle install --without production
+bundle exec rake db:migrate
+rails generate cucumber:install capybara 
+rails generate cucumber_rails_training_wheels:install 
+rails generate rspec:install 
 ```
 
-Then run `bundle install --without production` as usual.
+1. You can double-check if everything was installed by running `bundle exec rake rspec` and `bundle exec rake cucumber`.  
+They should pass without any errors.
+We have provided some Cucumber scenarios in `features/` and a subset of
+the RSpec tests you'll need in `spec/`.
 
-Cucumber and Capybara need some "boilerplate" files to work correctly.
-Like Rails, Cucumber comes with a
-_generator_ that creates the necessary files for you.  
-In the app's root directory,
-run the following two commands (if they ask whether it's OK to
-overwrite certain files, you can safely say yes): 
+1. Next, set up test coverage collection.  Add the following code **BEFORE ANYTHING ELSE ON LINE ONE** of both
+`spec/rails_helper.rb` and `features/support/env.rb`:
 
-```sh
-rails generate cucumber:install --capybara
-rails generate cucumber_rails_training_wheels:install
+```ruby 
+require 'simplecov' 
+SimpleCov.start 'rails' 
 ```
 
-Running these two generators gives you a few commonly used step definitions
-as a starting point, such as interactions with a web browser.
-Take a moment to look at these predefined step definitions in 
-`rottenpotatoes/features/step_definitions/web_steps.rb`; 
-in this assignment you'll need to create new step definitions to match
-the unique functionality of your app, and some of your step
-definitions may reuse these simpler ones like subroutines.
+Now whenever you run `rspec` or `cucumber`, SimpleCov will generate a coverage report
+in a directory named `coverage/`.  SimpleCov can intelligently merge the results, so running
+the tests for Rspec does not overwrite the coverage results from
+SimpleCov and vice versa.  Verify that coverage reporting is working.
 
-# Part 1: warm up
+1. When you're satisfied that the tests and coverage reporting work locally, commit and push all your changes, then head over
+to `travis-ci.org`.  You should see that a build (continuous integration run) has begun; since there are no tests yet,
+it should run very quickly.  In particular, inspect the output to make sure the process of collecting
+test coverage results and sending them to CodeClimate was successful.
 
-Recall that a feature is defined by one or more scenarios.  The
-scenarios that make up each feature live in file in the app's
-`features/` subdirectory in files with names ending in the extension `.feature`.
-
-We will start with a warm-up exercise.  Read the feature file for
-"User can manually add a movie" and observe how the steps mimic what a
-human user would do to manually add a new movie to RottenPotatoes.  
-
-Running `rake cucumber` (try it now) will cause Cucumber to try to run
-all the features. 
-Cucumber will display each step of each scenario as it's run using one
-of four colors: Green if the step passed, Red if it failed, Yellow if
-there is no step definition that matches the step ("not implemented
-yet"), and Blue if the step was skipped.
-
-On this first run, you will get a slew of failures in red,
-with some steps shown in blue because a failing step causes all
-remaining steps in that scenario to be skipped.
-
-As a warm-up, let's narrow our attention to just one scenario:
-
-`bundle exec cucumber features/add_movie.feature`
-
-(Running `rake cucumber` automatically prepends `bundle exec` and also
-ensures the test database's schema is brought up-to-date with any
-changes to the main database schema.  You'd use this when it's time to
-re-run all your app's scenarios, but when working on a single scenario
-at a time, it's usually easier just to run that single scenario.  You
-can also provide a specific line number to start at, as in `bundle
-exec cucumber features/add_movie.feature:3`, to run only the single
-scenario starting at line 3 of the file.)
-
-In this case, the first
-step on line 4 is red, so Cucumber skips the rest of the scenario.
-As the error message explains, the step fails because
-there is no path in `features/support/paths.rb` that matches "the RottenPotatoes home
-page."  What does this message mean?
-
-Look in that file and you will see a method called `path_to()`.  Now
-look at `web_steps.rb` and find the step definition whose regexp
-matches "Given I am on the RottenPotatoes home page", and you 
-will see that the body of that step def tries to pass a string to
-`path_to`.  It expects `path_to` to return an actual URL, which will
-be supplied to `visit`, a method within Cucumber that will try to
-request that URL from your app and ingest the result.
-
-Our problem is that we'd like to refer to "the RottenPotatoes home
-page" in our steps rather than providing an explicit URL.  Modify the
-`path_to()` method so that if passed "the RottenPotatoes home page" it
-returns the correct app-relative URL for the home page.
-
-If you now re-run the test, that first step should pass, but the
-scenario will still fail later on because you also need a page name to
-URL mapping for "the Create New Movie page", so you'll have to add that.
-
-**SUCCESS:** When you re-run the scenario with your fix in place, 
-all steps should turn green for Passing,
-which gives Cucumber its name.
+1. Finally, check CodeClimate for the results of analyzing both code quality and test coverage on your app.
+For test coverage, you can click on the name of any file in CodeClimate, then click the Code tab, then check the 
+Coverage box.  Lines that were "touched" by some test will be highlighted.
 
 
-# Part 2: Create a declarative scenario step for adding movies
 
-The goal of BDD is to express behavioral tasks rather than low-level operations.  
+**Part 1: add a Director field to Movies**
 
-The background step of all the scenarios in this homework requires that
-the movies database contain some movies.  Analogous to the explanation
-in Section 4.7, it would go against the goal of BDD to do this by
-writing scenarios that spell out every interaction required to add a new
-movie, since adding new movies is not what these scenarios are about. 
+Create and apply a migration that adds the Director field to the movies
+table.  The director field should be a string containing the name of the
+movie's director.  HINT: use the [`add_column` method of
+`ActiveRecord::Migration`](http://apidock.com/rails/ActiveRecord/ConnectionAdapters/SchemaStatements/add_column)
+to do this.
 
-Recall that the `Given` steps of a user story specify the initial state
-of the system: it does not matter how the system got into that state.
-For part 1, therefore, you will create a step definition that will match
-the step `Given the following movies exist` in the `Background` section
-of both `sort_movie_list.feature` and `filter_movie_list.feature`.
-(Later in the course, we will show how to DRY out the repeated
-`Background` sections in the two feature files.) 
+Remember that once the migration is applied, you also have to do `rake
+db:test:prepare` to load the new post-migration schema into the test
+database!
 
-Add your code in the `movie_steps.rb` step definition file.  You can
-just use ActiveRecord calls to directly add movies to the database; it`s
-OK to bypass the GUI associated with creating new movies, since that's
-not what these scenarios are testing. 
+Remember to add the new `director` attribute to the list of movie
+attributes allowed in `params`, in the `movie_params` method in
+`movies_controller.rb`. 
 
-**SUCCESS** is when all Background steps for the scenarios in
-`filter_movie_list.feature` and `sort_movie_list.feature` are passing
-Green. 
 
-# Part 3: Happy paths for filtering movies
+**Part 2: use Acceptance and Unit tests to get new scenarios passing**
 
-1. Complete the scenario `restrict to movies with "PG" or "R" ratings` in `filter_movie_list.feature`. You can use existing step definitions in `web_steps.rb` to check and uncheck the appropriate boxes, submit the form, and check whether the correct movies appear (and just as importantly, movies with unselected ratings do not appear).
+We've provided [three Cucumber scenarios](http://pastebin.com/L6FYWyV7)
+to drive creation of the happy path of Search for Movies by Director.
+The first lets you add director info to an existing movie, and doesn't
+require creating any new views or controller actions (but does require
+modifying existing views, and will require creating a new step
+definition and possibly adding a line or two to
+`features/support/paths.rb`).
 
-2. Since it's tedious to repeat steps such as When I check the 'PG' checkbox, And I check the 'R' checkbox, etc., create a step definition to match a step such as:
-`Given I check the following ratings: G, PG, R`
-This single step definition should only check the specified boxes, and
-leave the other boxes as they were. HINT: look up the `steps` method
-of Cucumber, which will simplify your step definition by allowing it 
-to reuse existing steps in  `web_steps.rb`.
+The second lets you click a new link on a movie details page "Find
+Movies With Same Director", and shows all movies that share the same
+director as the displayed movie.  For this you'll have to modify the
+existing Show Movie view, and you'll have to add a route, view and
+controller method for Find With Same Director.
 
-3. For the scenario `all ratings selected`, it would be tedious to use
-`And I should see` to name every single movie. That would detract from
-the goal of BDD to convey the behavioral intent of the user story. To
-fix this, create step definitions in `movie_steps.rb` that will match steps of the form: 
-`Then I should see all of the movies`.
-HINT: Consider counting the number of rows in the HTML table to implement these steps. If you have computed rows as the number of table rows, you can use the assertion 
-`expect(rows).to eq value`
-to fail the test in case the values don't match.
-(You don't need to implement the scenario for when no ratings are selected.)
+The third handles the sad path, when the current movie has no director
+info but we try to do "Find with same director" anyway.
 
-4. Use your new step definitions to complete the scenario `all ratings
-selected`. 
+Going one Cucumber step at a time, use RSpec to create the appropriate
+controller and model specs to drive the creation of the new controller
+and model methods.  At the least, you will need to write tests to drive
+the creation of:
 
-**SUCCESS** is when all scenarios in `filter_movie_list.feature` pass with all steps green.
+* a RESTful route for Find Similar Movies (HINT: use the 'match' syntax
+for routes as suggested in "Non-Resource-Based Routes" in Section 4.1 of
+ESaaS). You can also use the key :as to specify a name to generate
+helpers (i.e. `search_directors_path`)
+http://guides.rubyonrails.org/routing.html 
 
-# Part 4: Happy paths for sorting movies by title and by release date
+Note: you probably won't test
+this directly in rspec, but a line in Cucumber or rspec will fail if the
+route is not correct.
 
-1. Since the scenarios in `sort_movie_list.feature` involve sorting, you will need the ability to have steps that test whether one movie appears before another in the output listing. Create a step definition that matches a step such as 
-`Then I should see "Aladdin" before "Amelie"`
+* a controller method to receive the click on "Find With Same Director",
+and grab the `id` (for example) of the movie that is the subject of the
+match (i.e. the one we're trying to find movies similar to)
 
-### HINTS
+* a model method in the Movie model to find movies whose director
+matches that of the current movie. Note: This implies that you should
+write at least 2 specs for your controller: 
 
-  * `page` is the Capybara method that returns an object representing
-  the page returned by the app server.  You can use it in expectations
-  such as `expect(page).to have_content('Hello World')`.  More
-  importantly, you can search the page for specific elements matching
-  CSS selectors or XPath expressions; see the [Capybara
-  documentation](https://github.com/jnicklas/capybara) under **Querying**.
-  * `page.body` is the page's HTML body as one giant string.  
-  * A regular expression could capture whether one string appears before
-  another in a larger string, though that's not the only possible
-  strategy. 
+1) When the specified movie has a director, it should...  
 
-2. Use the step definition you create above to complete the scenarios `sort movies alphabetically` and `sort movies in increasing order of release date` in `sort_movie_list.feature`.
+2) When the specified movie has no director, it should ... 
 
-**SUCCESS** is all steps of all scenarios in both feature files passing Green.
+and 2 specs for your model: 
 
-## Part 5: Add a new feature to RottenPotatoes
+1) it should find movies by the same director and 
 
-So far, you have created tests for app features that already existed.
-In true BDD, you would first write the scenarios (user stories), and
-to make each line of the scenario pass, you write the necessary app
-code.
+2) it should not find movies by different directors.
 
-The Open Movie Database (TMDb) is an open noncommercial version of the
-Internet Movie Database IMDb.  We'll use Cucumber to develop two scenarios and the
-corresponding Lo-Fi UI sketches 
-for a feature that lets the user add a movie to RottenPotatoes by
-getting the movie information from TMDb rather than typing it in.
-It heps that TMDb has a service API to allow such integrations.
+It's up to you to decide whether you want to handle the sad path of "no
+director" in the controller method or in the model method, but you must
+provide a test for whichever one you do. Remember to include the line
+`require 'rails_helper'` at the top of your *_spec.rb files.
 
-The following storyboard shows how we envision the feature working:
+You may find this [RSpec cheat sheet](https://devhints.io/rspec) helpful.
 
-![Add movie from TMDb: Storyboard](./storyboard.png "Add movie from
-TMDb: storyboard")
+Improve your test coverage by adding unit tests for untested or
+undertested code. Specifically, you can write unit tests for the
+`index`, `update`, `destroy`, and `create` controller methods.
 
-The home page of RottenPotatoes, which lists all movies, will
-be augmented with a search box where we can type some title keywords of
-a movie and a Search button that will search TMDb for a movie whose
-title contains those keywords.  If the search does match---the so-called
-"happy path" of execution---the first movie that matches will
-be used to "pre-populate" the fields in the Add New Movie page.
-(In a real app,
-you'd probably want to create a separate page showing all matches and letting the
-user pick one, but we're deliberately keeping the example simple.)
-If the search doesn't match any movies---the "sad path"---we should be
-returned to the home page with a message informing us of 
-this fact.
+**Submission:**
 
-You can use the content below as a starting point for a feature file.
-The lines are numbered for reference in the rest of the exercise, but
-you should remove these numbers in your real feature file.
+Here are the instructions for submitting your assignment for
+grading. Submit a zip file containing the following files and
+directories of your app:
 
-```gherkin
-  1 Feature: User can add movie by searching for it in The Movie Database (TMDb)
-  2 
-  3   As a movie fan
-  4   So that I can add new movies without manual tedium
-  5   I want to add movies by looking up their details in TMDb
-  6 
-  7 Scenario: Try to add nonexistent movie (sad path)
-  8 
-  9   Given I am on the RottenPotatoes home page
- 10   Then I should see "Search TMDb for a movie"
- 11   When I fill in "Search Terms" with "Movie That Does Not Exist"
- 12   And I press "Search TMDb"
- 13   Then I should be on the RottenPotatoes home page
- 14   And I should see "'Movie That Does Not Exist' was not found in TMDb."
+* app/ config/ db/migrate features/ spec/ Gemfile Gemfile.lock
+
+If you modified any other files, please include them too. If you are on
+a *nix based system, navigate to the root directory for this assignment
+and run
+
+```sh $ cd ..  $ zip -r hw5.zip rottenpotatoes/app/
+rottenpotatoes/config/ rottenpotatoes/db/migrate
+rottenpotatoes/features/ rottenpotatoes/spec/ rottenpotatoes/Gemfile
+rottenpotatoes/Gemfile.lock ```
+
+This will create the file hw5.zip, which you will submit.
+
+IMPORTANT NOTE: Your submission must be zipped inside a rottenpotatoes/
+folder so that it looks like so:
+
+``` $ tree .  └── rottenpotatoes
+    ├── Gemfile ├── Gemfile.lock ├── app ...
 ```
-
-Verify that the steps above correctly describe the flow suggested by
-the storyboard diagrams. 
-
-1.  Running the above scenario should fail at line 10, because the home page
-doesn't yet include the text "Search TMDb for a movie".  Before fixing
-the home page to make this step pass, insert the following step after
-line 9: `Then show me the page`.  Run the scenario, and you should see
-a browser open to the home page -- you are seeing what Cucumber "sees"
-after line 9.  This functionality is provided by the `launchy` gem,
-and is a great way to debug scenarios.
-
-Now remove the "show me the page" step, and identify and modify the file containing the home page
-code to fix the problem and make line 10 pass.
-
-2. Now the step on line 11 will fail
-because the home page does not include a search form.  As the step
-suggests, modify the home page to include a search form with the
-corresponding text input field and submit button, by putting the following
-in `index.html.erb`:
-
-```ruby
-<%= form_tag 'URI coming soon' do %>
-
-...your code for the form fields...
-
-<% end %>
-```
-
-(We will explain the `URI coming soon` in the next step.)
-
-HINT: If you associate an HTML `<label>`
-element with a form control such as a text input box or button, Capybara can
-find the form control by label in steps such as "When I fill in..." or
-"When I press...".
-
-3. The step will still fail, because the form has to submit to a
-controller action, and we gave the bogus URI `URI coming soon`.  To
-make it pass, we need to specify a real URI as part of the form route,
-and create a controller action that will handle the form
-submission.  Add a route to `config/routes.rb` as follows:
-
-`post '/movies/search_tmdb' => 'movies#search_tmdb', :as => 'search_tmdb'`
-
-<details>
-  <summary>
-  What is the role of <code>:as => 'search_tmdb'</code> in the route
-  specification? What happens if you remove it?  
-  </summary>
-  <p><blockquote>
-  It creates a helper method <code>search_tmdb_path</code> that can be
-  called from your view to generate the correct submission URI for the
-  form, rather than hardwiring the string
-  <code>'/movies/search_tmdb'</code> as the submission URI. You can
-  see this by running <code>rake routes</code> at a terminal to list
-  all routes and the names of the associated route helper methods.
-  </blockquote></p>
-</details>
-
-
-4. Verify the step still fails, but again the reason has changed:
-specifically, there is a route for the form to submit to, but no
-controller method defined 
-
-<details>
-  <summary>
-  The error message tells you the name of the file and method that
-  Rails expected to find but did not.  How did Rails arrive at these
-  values for the file and method name?
-  </summary>
-  <p><blockquote>
-  The route target is <code>movies#search_tmdb</code>, which is Rails
-  routing shorthand for "the <code>search_tmdb</code> method in
-  <code>movies_controller.rb</code>". 
-  </blockquote></p>
-</details>
-
-Create the controller action, and as the sole line of the action (for
-now), just enter `byebug`.  Verify that running the scenario now drops
-you into the Ruby debugger, and inspect the `params` hash to see what
-values were harvested from the form.
-
-5. Finally, make the controller action pass by always having it place
-the message "'(movie name)' was not found in TMDb."  In other words,
-the controller action always follows the sad path.  Verify that this
-version of the controller action passes.
-
-If you're new to BDD, this step might surprise you.  Why would we
-deliberately create a fake controller method that doesn't actually call
-TMDb, but just pretends the search always fails?  In this case, the answer is
-that it lets us finish the rest of the scenario, making sure that our
-HTML views match the Lo-Fi sketches and that the sequence of views
-matches the storyboards.  In other words, you can make progress using
-BDD without have all the code written!
-
-Next, we can work on the happy path (when
-the search succeeds in TMDb) by modifying the controller code.
-
-6. In preparation for the happy path, you can use the code below as a
-starter to add to your existing feature file (once again, the line
-numbers are for reference only and you should remove them):
-
-```gherkin
-  1 Scenario: Try to add existing movie (happy path)
-  2 
-  3   Given I am on the RottenPotatoes home page
-  4   Then I should see "Search TMDb for a movie"
-  5   When I fill in "Search Terms" with "Inception"
-  6   And I press "Search TMDb"
-  7   Then I should be on the "Search Results" page
-  8   And I should not see "not found"
-  9   And I should see "Inception"
-```
-
-The first few steps of this scenario will pass, because nothing
-actually goes wrong until we try to check the search results.
-However, observe that lines 3 and 4 are
-the same as the first two steps of the sad path.  That should ring a Pavlovian bell in your
-head asking how you can DRY out the repetition.  Move the appropriate
-step(s) into a `Background:` section of your feature file, and verify
-that the sad path scenario we completed in the previous step still
-passes.
-
-
-
