@@ -8,4 +8,12 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-      - run: bundle exec rake
+      - run: 
+        rake db:migrate RAILS_ENV=test
+        rake db:seed RAILS_ENV=test
+        rspec
+        cucumber
+
+      - uses: codecov/codecov-action@v3
+        with:
+          directory: coverage
