@@ -1,7 +1,7 @@
 # TDD with RSpec
 
 ![Build Status](https://github.com/sldai/hw-tdd-rspec/actions/workflows/build.yml/badge.svg)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/b735fecf2f26303ed031/test_coverage)](https://codeclimate.com/github/sldai/hw-tdd-rspec/test_coverage)
+[![codecov](https://codecov.io/gh/sldai/hw-tdd-rspec/branch/hw-tdd/graph/badge.svg?token=CO9U1IX9JK)](https://codecov.io/gh/sldai/hw-tdd-rspec)
 
 
 In this assignment you will use a combination of Acceptance and
