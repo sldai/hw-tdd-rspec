@@ -2,8 +2,7 @@
 
 ![Build Status](https://github.com/sldai/hw-tdd-rspec/actions/workflows/build.yml/badge.svg)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/b735fecf2f26303ed031/test_coverage)](https://codeclimate.com/github/sldai/hw-tdd-rspec/test_coverage)
-[![Coverage Status](https://coveralls.io/repos/github/sldai/hw-tdd-rspec/badge.svg?branch=master)](https://coveralls.io/github/sldai/hw-tdd-rspec?branch=master)
-[![GitHub Super-Linter](https://github.com/sldai/hw-tdd-rspec/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
 
 In this assignment you will use a combination of Acceptance and
 Unit/Functional 

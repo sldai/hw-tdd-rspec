@@ -23,6 +23,7 @@ group :development, :test do
   gem 'cucumber-rails' 
   gem 'cucumber-rails-training-wheels'
   gem 'simplecov', :require => false
+  gem 'codecov', :require => false
 end
 
 group :production do
