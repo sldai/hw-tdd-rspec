@@ -10,7 +10,6 @@ jobs:
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
       - run: |
           bundle exec rake db:migrate RAILS_ENV=test
-          bundle exec rake db:seed RAILS_ENV=test
           bundle exec rspec
           bundle exec cucumber
 
