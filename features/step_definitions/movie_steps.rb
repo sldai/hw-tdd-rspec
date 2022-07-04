@@ -48,3 +48,7 @@ Then /I should see all the movies/ do
     expect(all('tr').count).to eq (Movie.count + 1)
   end
 end
+
+Then(/the director of "([^"]*)" should be "([^"]*)"$/) do |title, director|
+  expect((Movie.find_by title: title).director).to eq director
+end

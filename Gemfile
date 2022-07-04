@@ -12,6 +12,7 @@ gem 'haml'
 gem 'protected_attributes'
 
 group :development, :test do
+  gem 'rubocop'
   gem 'sqlite3'
   gem 'byebug'
   gem 'database_cleaner'
